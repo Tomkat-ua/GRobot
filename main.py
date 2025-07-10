@@ -1,6 +1,5 @@
 
 import pandas as pd,io,os,time,fbextract,datetime,warnings
-from google.oauth2 import service_account
 import gspread
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
