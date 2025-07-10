@@ -1,5 +1,5 @@
 
-import pandas as pd,io,os,time,schedule,fbextract,datetime,warnings
+import pandas as pd,io,os,time,fbextract,datetime,warnings
 from google.oauth2 import service_account
 import gspread
 from google.oauth2.service_account import Credentials

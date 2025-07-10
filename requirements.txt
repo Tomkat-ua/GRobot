@@ -6,6 +6,6 @@ pandas
 openpyxl
 gspread
 gspread-formatting
-psycopg2
+psycopg2-binary
 fdb
 schedule
