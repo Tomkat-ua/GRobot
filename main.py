@@ -151,7 +151,10 @@ def writefile():
 
 while True:
     # schedule.run_pending()
-    readdisk()
-#     readfiles()
-    time.sleep(int(delay)*60)
-#     # writefile()
+    try:
+        readdisk()
+    #     readfiles()
+        time.sleep(int(delay)*60)
+    #     # writefile()
+    except Exception as e:
+        print(f"⛔️{datetime.datetime.now()} -{str(e)} ")
