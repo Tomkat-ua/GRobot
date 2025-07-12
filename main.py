@@ -1,20 +1,31 @@
 
-import pandas as pd,io,os,time,fbextract,datetime,warnings
-import gspread
+import pandas as pd,io,os,fbextract,datetime,warnings
+import gspread,platform
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
+from flask import Flask,  request
+from gevent.pywsgi import WSGIServer
+from apscheduler.schedulers.background import BackgroundScheduler
 
-
-
-
+local_ip         = os.getenv('LOCAL_IP','192.168.10.9')
+server_port      = os.getenv('SERVER_PORT',3000)
 
 delay = os.getenv("DELAY", 1)
+
+app = Flask(__name__)
+
+
+def my_job():
+    print(f"Эта функция выполняется каждые {delay*60} секунд.")
+
+
+
 
 def readdisk():
     # 🔐 Авторизація до Google Drive
     SCOPES = ['https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
+    creds = Credentials.from_service_account_file('creds/credentials.json', scopes=SCOPES)
     drive_service = build('drive', 'v3', credentials=creds)
 
     # 🔍 Знайти всі .xlsx файли в певній папці
@@ -104,11 +115,11 @@ def read_update(file_name,file_id,drive_service):
 
 
 def writefile():
-
+    result = []
     # Параметри доступу
     SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
     # Авторизація
-    creds = Credentials.from_service_account_file("credentials.json", scopes=SCOPES)
+    creds = Credentials.from_service_account_file("creds/credentials.json", scopes=SCOPES)
     client = gspread.authorize(creds)
     # Відкрити таблицю за назвою ## 1iIhAaIoHz2bU18QKw6xis3MxohBDxwmkCHlb852NFco
     # sh = gc.open("transport")  # або .open_by_url(...)
@@ -141,19 +152,36 @@ def writefile():
     values = [list(row) for row in rows]
     sheet.update(range_name="A2", values=values)
     print(f"✅️{datetime.datetime.now()} Запис ОК ")
+    return result
 
 
-# schedule.every(1).minutes.do(readfiles())
-# if __name__ == '__main__':
+# while True:
+#     try:
+#         readdisk()
+#     #     readfiles()
+#         time.sleep(int(delay)*60)
+#     #     # writefile()
+#     except Exception as e:
+#         print(f"⛔️{datetime.datetime.now()} -{str(e)} ")
 
-# readdisk()
 
-while True:
-    # schedule.run_pending()
-    try:
-        readdisk()
-    #     readfiles()
-        time.sleep(int(delay)*60)
-    #     # writefile()
-    except Exception as e:
-        print(f"⛔️{datetime.datetime.now()} -{str(e)} ")
+@app.route('/run', methods=['GET'])
+def get_data():
+    # param1 = request.args.get('param1')
+    # param2 = request.args.get('param2')
+    # Обработка параметров
+    # data = {'param1': param1, 'param2': param2}
+    return '' #writefile()
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(readdisk, 'interval', seconds=delay*60, id='readdisk')
+scheduler.start()
+
+if __name__ == "__main__":
+    if platform.system() == 'Windows':
+        http_server = WSGIServer((local_ip, int(server_port)), app)
+        print(f"Running HTTP-SERVER on port - http://" + local_ip + ':' + str(server_port))
+    else:
+        http_server = WSGIServer(('', int(server_port)), app)
+        print(f"Running HTTP-SERVER on port :" + str(server_port))
+    http_server.serve_forever()

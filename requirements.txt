@@ -8,3 +8,7 @@ gspread
 gspread-formatting
 psycopg2-binary
 fdb
+#####
+flask
+gevent
+APScheduler

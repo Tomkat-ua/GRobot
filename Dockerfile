@@ -5,7 +5,7 @@ ENV TZ=Europe/Kiev
 WORKDIR /app
 
 COPY requirements.txt /app/
-COPY credentials.json /app/
+COPY creds/credentials.json /app/
 COPY *.py /app/
 
 RUN apt-get update  
