@@ -7,7 +7,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 local_ip         = os.getenv('LOCAL_IP','192.168.10.9')
 server_port      = os.getenv('SERVER_PORT',3000)
 
-delay = os.getenv("DELAY", 1)
+delay = int(os.getenv("DELAY", 1))
 app = Flask(__name__)
 
 @app.route('/run', methods=['GET'])
