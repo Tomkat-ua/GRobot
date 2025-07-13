@@ -1,2 +1,2 @@
-docker build -t tomkat/grobot:1  .
+docker build -t tomkat/grobot:2  .
 
