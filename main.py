@@ -25,5 +25,5 @@ if __name__ == "__main__":
         print(f"Running HTTP-SERVER on port - http://" + local_ip + ':' + str(server_port))
     else:
         http_server = WSGIServer(('', int(server_port)), app)
-        print(f"Running HTTP-SERVER on port : {str(request.base_url)} {server_port}")
+        print(f"Running HTTP-SERVER on port :  {server_port}")
     http_server.serve_forever()
