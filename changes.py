@@ -4,27 +4,10 @@ from googleapiclient.discovery import build
 import fbextract,datetime
 from google.oauth2.service_account import Credentials
 
-# 1. Авторизація Google Sheets
-scope = ['https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('creds/credentials.json', scope)
-client = gspread.authorize(creds)
-drive_service = build('drive', 'v3', credentials=creds)
-
-# 🔍 Знайти всі файли в певній папці
-FOLDER_ID = '13ixPu84zGwKSqMOZUUvcXjryrCljUbpV'
-
-query = f"'{FOLDER_ID}' in parents and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
-results = drive_service.files().list(q=query, fields="files(id, name)").execute()
-files = results.get('files', [])
-
-results = drive_service.files().list(
-    q="mimeType='application/vnd.google-apps.spreadsheet'",
-    fields="files(id, name, mimeType)").execute()
-
-def proc_file(file_name):
+def proc_file(file_name,sheet):
     # 2. Відкриваємо аркуш
     # sheet = client.open("Автомобілі_1ЄБ").sheet1
-    sheet = client.open(file_name).sheet1
+    # sheet = client.open(file_name).sheet1
     data = sheet.get_all_values()
 
     # 3. Підключення до Firebird
@@ -38,8 +21,6 @@ def proc_file(file_name):
         if len(row) < len(header):
             row += [''] * (len(header) - len(row))  # заповнення порожніх
         record = dict(zip(header, row))
-        # print(record)
-        # file_name = "Автомобілі_1ЄБ"
         if record.get('sync_status') == 'Змінено':
             # Вставка або оновлення — приклад:
             # cur.execute(" UPDATE CARS set driver = ? WHERE car_id = ?", [record['водій'],int(record['car_id'])])
@@ -52,9 +33,9 @@ def proc_file(file_name):
             # sheet.update(f'E{i}', [['ок']])  # sync_status в колонці E
             sheet.update(range_name=f'A{i}', values=[['Oк']])
             ch = ch + 1
-            print(f"  ⏩{datetime.datetime.now()}: Оновлено: рядок {i}, номер  {record['військовий номер']}")
+            print(f"  ✅️{datetime.datetime.now()}: Оновлено: рядок {i}, номер  {record['військовий номер']}")
     # 5. Завершення
-    print(f" ⏩{datetime.datetime.now()}: {file_name} - Оброблено, зміни - {ch}")
+    print(f"  ✅️{datetime.datetime.now()}: {file_name} - Оброблено, зміни - {ch}")
     con.commit()
     con.close()
     return ch
@@ -77,7 +58,6 @@ def to_cloud():
         sh = client.open_by_url(url)
 
         ############################################
-        # print(f"➡️{datetime.datetime.now()} Запис дельти ... ")
         result.append(f"➡️{datetime.datetime.now()} -- Запис дельти ... ")
         # Дані для запису
         sql = ' select * from v_cars'
@@ -110,22 +90,36 @@ def to_cloud():
         print(f"⏩{datetime.datetime.now()} ==== BEGIN TO CLOUD ======================================================")
         return str(e)
 
-
-
 def from_cloud():
     print(f"⏩{datetime.datetime.now()} ==== BEGIN FROM CLOUD ======================================================")
+    # 1. Авторизація Google Sheets
+    scope = ['https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('creds/credentials.json', scope)
+    client = gspread.authorize(creds)
+    drive_service = build('drive', 'v3', credentials=creds)
+    # print(drive_service)
+
+    # 🔍 Знайти всі файли в певній папці
+    files = drive_service.files().list(q="mimeType='application/vnd.google-apps.spreadsheet'",
+                                        fields="files(id, name, mimeType)").execute()
     gch = 0
-    for f in results.get('files', []): # <-- цикл по списку файлів
-        file_id = f['id']
+    for f in files.get('files', []): # <-- цикл по списку файлів
         file_name = f['name']
         if file_name.startswith("Автомобілі"):
             print(f" ⏩{datetime.datetime.now()}: {f['name']} - {f['id']}")
-            gch = gch + proc_file(file_name) # <-- обробка одного  файлу
+            sheet = client.open(file_name).sheet1
+            gch = gch + proc_file(file_name,sheet) # <-- обробка одного  файлу
     print(f" ⏩{datetime.datetime.now()} - Всього змін - {gch}")
     print(f"⏩{datetime.datetime.now()} ===== END FROM CLOUD========================================================")
     return gch
 
 def main_cycle():
-    ch_cloud = from_cloud()
-    if ch_cloud > 0:
-        to_cloud()
+    try:
+        ch_cloud = from_cloud()
+        if ch_cloud > 0:
+            to_cloud()
+    except Exception as e:
+        print(str(e))
+
+
+# from_cloud() # <--  test mode
