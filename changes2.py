@@ -87,5 +87,5 @@ def main_cycle():
             write_changes(file_id,file_name)
     except Exception as e:
         print(f"⏩{datetime.datetime.now()} - ERROR  {str(e)}")
-    print(f"⏩{datetime.datetime.now()} ======================================")
+    print(f"⏩{datetime.datetime.now()} - {len(files_list)} file(s) for process -")
 # main_cycle() # <--  test mode
