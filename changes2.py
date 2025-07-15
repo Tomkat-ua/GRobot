@@ -1,10 +1,10 @@
 ######## FOR Excel
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+# import gspread
+# from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 import fbextract,datetime,io,os
 from google.oauth2.service_account import Credentials
-from google.oauth2 import service_account
+# from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload
 import pandas as pd
 
@@ -29,6 +29,7 @@ def finde_on_drive():
     for file in files:
         file_id = file['id']
         file_name = file['name']
+        print(f"⏩{datetime.datetime.now()} - {file_name}")
         if file_name.startswith("UPD"):
             files_list[file_id] = file_name
     return files_list
@@ -52,6 +53,7 @@ def write_changes(file_id,file_name):
         con = fbextract.get_connection()
         cur = con.cursor()
         for _, record in new_rows.iterrows():
+            print(f"⏩{datetime.datetime.now()} - оброблено {record['військовий номер']}")
             print(record['військовий номер'])
             cur.execute(' execute procedure LOAD_DATA (?,?,?,?,?,?,?,?)',
                         [file_name, record['військовий номер'], record['підрозділ'], record['статус'], record['тех стан'],
@@ -64,7 +66,7 @@ def write_changes(file_id,file_name):
     # ✅ 3. Прочитати змінені рядки
     df = pd.read_excel(tmp_dir +file_name)
     new_rows = df[df['sync_status'] == 'Змінено']
-    print(len(new_rows))
+    print(f"⏩{datetime.datetime.now()} - змін всього {len(new_rows)}")
     if len(new_rows) > 0:
         write_to_db(new_rows)
         to_cloud.to_cloud()
@@ -75,6 +77,7 @@ def write_changes(file_id,file_name):
     drive_service.files().update(fileId=file_id, body={"name": new_name}).execute()
 
 def main_cycle():
+    print(f"⏩{datetime.datetime.now()} ======================================")
     try:
         files_list = finde_on_drive()
         for file_id in files_list:
@@ -83,8 +86,6 @@ def main_cycle():
             load_file(file_id,file_name)
             write_changes(file_id,file_name)
     except Exception as e:
-        print(str(e))
-
-
-
+        print(f"⏩{datetime.datetime.now()} - ERROR  {str(e)}")
+    print(f"⏩{datetime.datetime.now()} ======================================")
 # main_cycle() # <--  test mode
