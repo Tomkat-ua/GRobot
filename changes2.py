@@ -54,7 +54,6 @@ def write_changes(file_id,file_name):
         cur = con.cursor()
         for _, record in new_rows.iterrows():
             print(f"⏩{datetime.datetime.now()} - оброблено {record['військовий номер']}")
-            print(record['військовий номер'])
             cur.execute(' execute procedure LOAD_DATA (?,?,?,?,?,?,?,?)',
                         [file_name, record['військовий номер'], record['підрозділ'], record['статус'], record['тех стан'],
                          record['водій'], record['локація'], record['примітки']])

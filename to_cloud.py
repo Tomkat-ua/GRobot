@@ -47,8 +47,8 @@ def to_cloud():
         result.append(f"✅️{datetime.datetime.now()} -- Запис ОК ")
         for row in result:
             print(row)
-        print(f"⏩{datetime.datetime.now()} ==== END TO CLOUD ========================================================")
+        print(f"⏩{datetime.datetime.now()} ==== END TO CLOUD ============================")
         return result
     except Exception as e:
-        print(f"⏩{datetime.datetime.now()} ==== BEGIN TO CLOUD ======================================================")
+        print(f"⏩{datetime.datetime.now()} ==== END TO CLOUD ===========================")
         return str(e)
