@@ -1,3 +1,4 @@
+######## FOR Google Sheets
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
@@ -100,13 +101,16 @@ def from_cloud():
     # print(drive_service)
 
     # 🔍 Знайти всі файли в певній папці
-    files = drive_service.files().list(q="mimeType='application/vnd.google-apps.spreadsheet'",
+    files = drive_service.files().list(q="mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'",
                                         fields="files(id, name, mimeType)").execute()
+    #application/vnd.google-apps.spreadsheet # < -- type for Google Sheets
+    #application/vnd.openxmlformats-officedocument.spreadsheetml.sheet # < -- type for XLSX
     gch = 0
     for f in files.get('files', []): # <-- цикл по списку файлів
         file_name = f['name']
+        print(f" ⏩{datetime.datetime.now()}: {f['name']} - {f['id']}")
         if file_name.startswith("Автомобілі"):
-            print(f" ⏩{datetime.datetime.now()}: {f['name']} - {f['id']}")
+            # print(f" ⏩{datetime.datetime.now()}: {f['name']} - {f['id']}")
             sheet = client.open(file_name).sheet1
             gch = gch + proc_file(file_name,sheet) # <-- обробка одного  файлу
     print(f" ⏩{datetime.datetime.now()} - Всього змін - {gch}")
@@ -122,4 +126,4 @@ def main_cycle():
         print(str(e))
 
 
-# from_cloud() # <--  test mode
+from_cloud() # <--  test mode
