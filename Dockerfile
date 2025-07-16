@@ -6,7 +6,10 @@ WORKDIR /app
 
 COPY requirements.txt /app/
 COPY creds/credentials.json /app/creds/credentials.json
-COPY *.py /app/
+COPY main.py /app/
+COPY changes2.py /app/
+COPY to_cloud.py /app/
+COPY fbextract.py /app/
 
 RUN apt-get update  
 RUN apt-get install  libfbclient2 -y --no-install-recommends
