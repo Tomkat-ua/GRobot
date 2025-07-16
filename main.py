@@ -1,9 +1,8 @@
-import platform,os,changes2
-from flask import Flask,request
+import platform,os
+from flask import Flask
 from gevent.pywsgi import WSGIServer
 from apscheduler.schedulers.background import BackgroundScheduler
-
-import to_cloud
+import to_cloud,changes2
 
 local_ip         = os.getenv('LOCAL_IP','192.168.10.9')
 server_port      = os.getenv('SERVER_PORT',3000)

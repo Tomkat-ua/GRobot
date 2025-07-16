@@ -3,7 +3,7 @@ google-auth
 google-auth-httplib2
 google-auth-oauthlib
 oauth2client
-#pandas
+pandas
 openpyxl
 gspread
 gspread-formatting
