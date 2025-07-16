@@ -4,6 +4,7 @@ ENV TZ=Europe/Kiev
 
 WORKDIR /app
 
+COPY tmp    /app/
 COPY requirements.txt /app/
 COPY creds/credentials.json /app/creds/credentials.json
 COPY main.py /app/
