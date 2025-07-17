@@ -1,14 +1,11 @@
 ######## FOR Excel
-# import gspread
-# from oauth2client.service_account import ServiceAccountCredentials
 from googleapiclient.discovery import build
 import fbextract,datetime,io,os
 from google.oauth2.service_account import Credentials
-# from google.oauth2 import service_account
+
 from googleapiclient.http import MediaIoBaseDownload
 import pandas as pd
-
-import to_cloud
+import to_cloud,from_booking
 
 tmp_dir = 'tmp/'
 
@@ -16,7 +13,7 @@ tmp_dir = 'tmp/'
 SCOPES = ['https://www.googleapis.com/auth/drive']
 creds = Credentials.from_service_account_file('creds/credentials.json', scopes=SCOPES)
 drive_service = build('drive', 'v3', credentials=creds)
-
+file_to_cloud= '12qKrKeMAj9uuo97sp6wQ3eutjBMug9zHSBkIeUaxryk'
 
 #✅ 1. Знайти файл на Google Drive
 def finde_on_drive():
@@ -47,7 +44,7 @@ def load_file(file_id,file_name):
         f.write(fh.getbuffer())
 
 
-def write_changes(file_id,file_name):
+def write_changes(file_id,file_name,mode =0):
     def write_to_db(new_rows):
         # ✅ 4. Внести зміни в БД
         con = fbextract.get_connection()
@@ -57,8 +54,6 @@ def write_changes(file_id,file_name):
             cur.execute(' execute procedure LOAD_DATA (?,?,?,?,?,?,?,?)',
                         [file_name, record['військовий номер'], record['підрозділ'], record['статус'], record['тех стан'],
                          record['водій'], record['локація'], record['примітки']])
-            # result = cur.fetchone()
-            # print(f"Оновлено {result[0]} записів")
         con.commit()
         con.close()
 
@@ -68,12 +63,16 @@ def write_changes(file_id,file_name):
     print(f"⏩{datetime.datetime.now()} - змін всього {len(new_rows)}")
     if len(new_rows) > 0:
         write_to_db(new_rows)
-        to_cloud.to_cloud()
-    # ✅ 5. Видалити локальний файл
-    os.remove(tmp_dir+file_name)
-    # ✅ 6.Перейменувати файл на Google Drive
-    new_name = f"processed_{file_name}"
-    drive_service.files().update(fileId=file_id, body={"name": new_name}).execute()
+        from_booking.from_booking(file_name)
+        to_cloud.to_cloud(file_to_cloud)
+    if mode == 0:
+        # ✅ 5. Видалити локальний файл
+        os.remove(tmp_dir+file_name)
+        # ✅ 6.Перейменувати файл на Google Drive
+        new_name = f"processed_{datetime.datetime.now()}_{file_name}"
+        drive_service.files().update(fileId=file_id, body={"name": new_name}).execute()
+        print(f"⏩{datetime.datetime.now()} - оброблено {file_name} ")
+        print(f"⏩{datetime.datetime.now()} - перейменовано  {new_name} ")
 
 def main_cycle():
     print(f"⏩{datetime.datetime.now()} ======================================")
@@ -81,10 +80,14 @@ def main_cycle():
         files_list = finde_on_drive()
         for file_id in files_list:
             file_name = files_list[file_id]
-            print(file_id, file_name)
             load_file(file_id,file_name)
             write_changes(file_id,file_name)
     except Exception as e:
-        print(f"⏩{datetime.datetime.now()} - ERROR  {str(e)}")
-    print(f"⏩{datetime.datetime.now()} - {len(files_list)} file(s) for process -")
+        print(f"⏩{datetime.datetime.now()} - ERROR main_cycle {str(e)}")
+    print(f"⏩{datetime.datetime.now()} - {len(files_list)} file(s) for process ")
+
+
+######## test area
 # main_cycle() # <--  test mode
+
+# write_changes('1560j0LBhnGj_76koAEJSPFW8VpeWgKnI','UPD_Автомобілі_1ЄБ.xlsx',1)

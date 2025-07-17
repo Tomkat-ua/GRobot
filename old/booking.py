@@ -9,7 +9,7 @@ fb = fbextract.get_connection()
 
 # 🔐 Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("creds/credentials.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("../creds/credentials.json", scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key("1P2DWthoBNJ0Q4Xfop76-yc-XZRbgH6DECU6JSmwv3jI").sheet1
 

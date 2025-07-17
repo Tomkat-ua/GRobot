@@ -1,18 +1,31 @@
-import platform,os
+import platform,os,warnings
 from flask import Flask
 from gevent.pywsgi import WSGIServer
 from apscheduler.schedulers.background import BackgroundScheduler
 import to_cloud,changes2
 
+
+
+warnings.filterwarnings("ignore", category=UserWarning)
 local_ip         = os.getenv('LOCAL_IP','192.168.10.9')
 server_port      = os.getenv('SERVER_PORT',3000)
 
 delay = int(os.getenv("DELAY", 1))
 app = Flask(__name__)
 
+@app.route('/', methods=['GET'])
+def index():
+    result = (""" <html> 
+        <title>API server GRobot</title>
+        <h4>API server GRobot</h4>
+        <body><a href=/run>Run to Cloud </a></body>
+    </html>
+    """)
+    return result
+
 @app.route('/run', methods=['GET'])
 def get_data():
-    return to_cloud.to_cloud()
+    return to_cloud.to_cloud(changes2.file_to_cloud)
 
 if __name__ == "__main__":
     scheduler = BackgroundScheduler()

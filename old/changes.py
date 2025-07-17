@@ -49,7 +49,7 @@ def to_cloud():
         # Параметри доступу
         SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
         # Авторизація
-        creds = Credentials.from_service_account_file("creds/credentials.json", scopes=SCOPES)
+        creds = Credentials.from_service_account_file("../creds/credentials.json", scopes=SCOPES)
         client = gspread.authorize(creds)
         # Відкрити таблицю за назвою ## 1iIhAaIoHz2bU18QKw6xis3MxohBDxwmkCHlb852NFco
         # sh = gc.open("transport")  # або .open_by_url(...)
@@ -95,7 +95,7 @@ def from_cloud():
     print(f"⏩{datetime.datetime.now()} ==== BEGIN FROM CLOUD ======================================================")
     # 1. Авторизація Google Sheets
     scope = ['https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_name('creds/credentials.json', scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name('../creds/credentials.json', scope)
     client = gspread.authorize(creds)
     drive_service = build('drive', 'v3', credentials=creds)
     # print(drive_service)
