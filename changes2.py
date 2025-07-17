@@ -2,10 +2,10 @@
 from googleapiclient.discovery import build
 import fbextract,datetime,io,os
 from google.oauth2.service_account import Credentials
-
+#from main import file_to_cloud as file_to_cloud
 from googleapiclient.http import MediaIoBaseDownload
 import pandas as pd
-import to_cloud,from_booking
+import to_cloud,from_booking,config
 
 tmp_dir = 'tmp/'
 
@@ -13,7 +13,7 @@ tmp_dir = 'tmp/'
 SCOPES = ['https://www.googleapis.com/auth/drive']
 creds = Credentials.from_service_account_file('creds/credentials.json', scopes=SCOPES)
 drive_service = build('drive', 'v3', credentials=creds)
-file_to_cloud= '12qKrKeMAj9uuo97sp6wQ3eutjBMug9zHSBkIeUaxryk'
+
 
 #✅ 1. Знайти файл на Google Drive
 def finde_on_drive():
@@ -64,7 +64,7 @@ def write_changes(file_id,file_name,mode =0):
     if len(new_rows) > 0:
         write_to_db(new_rows)
         from_booking.from_booking(file_name)
-        to_cloud.to_cloud(file_to_cloud)
+        to_cloud.to_cloud(config.file_to_cloud)
     if mode == 0:
         # ✅ 5. Видалити локальний файл
         os.remove(tmp_dir+file_name)
@@ -82,9 +82,10 @@ def main_cycle():
             file_name = files_list[file_id]
             load_file(file_id,file_name)
             write_changes(file_id,file_name)
+        print(f"⏩{datetime.datetime.now()} - {len(files_list)} file(s) for process ")
     except Exception as e:
         print(f"⏩{datetime.datetime.now()} - ERROR main_cycle {str(e)}")
-    print(f"⏩{datetime.datetime.now()} - {len(files_list)} file(s) for process ")
+
 
 
 ######## test area

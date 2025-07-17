@@ -2,6 +2,7 @@ google-api-python-client
 google-auth
 google-auth-httplib2
 google-auth-oauthlib
+#google.oauth2.service_account
 oauth2client
 pandas
 openpyxl
