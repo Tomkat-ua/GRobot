@@ -1,25 +1,18 @@
 ######## FOR Excel
-from googleapiclient.discovery import build
 import fbextract,datetime,io,os
-from google.oauth2.service_account import Credentials
-#from main import file_to_cloud as file_to_cloud
 from googleapiclient.http import MediaIoBaseDownload
 import pandas as pd
-import to_cloud,from_booking,config
+import to_cloud,from_booking,config,move_file
 
 tmp_dir = 'tmp/'
 
-# 🔐 Авторизація до Google Drive
-SCOPES = ['https://www.googleapis.com/auth/drive']
-creds = Credentials.from_service_account_file('creds/credentials.json', scopes=SCOPES)
-drive_service = build('drive', 'v3', credentials=creds)
-
+drive_service = config.get_drive_service()
 
 #✅ 1. Знайти файл на Google Drive
 def finde_on_drive():
     # 🔍 Знайти всі .xlsx файли в певній папці
-    FOLDER_ID = '13ixPu84zGwKSqMOZUUvcXjryrCljUbpV'
-    query = f"'{FOLDER_ID}' in parents and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+    folder_id = '13ixPu84zGwKSqMOZUUvcXjryrCljUbpV'
+    query = f"'{folder_id}' in parents and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
     results = drive_service.files().list(q=query, fields="files(id, name)").execute()
     files = results.get('files', [])
     files_list = {}
@@ -31,7 +24,6 @@ def finde_on_drive():
             files_list[file_id] = file_name
     return files_list
 
-
 # ✅ 2. Завантажити файл .xlsx локально
 def load_file(file_id,file_name):
     request = drive_service.files().get_media(fileId=file_id)
@@ -42,7 +34,6 @@ def load_file(file_id,file_name):
         status, done = downloader.next_chunk()
     with open(tmp_dir+file_name, "wb") as f:
         f.write(fh.getbuffer())
-
 
 def write_changes(file_id,file_name,mode =0):
     def write_to_db(new_rows):
@@ -71,8 +62,10 @@ def write_changes(file_id,file_name,mode =0):
         # ✅ 6.Перейменувати файл на Google Drive
         new_name = f"processed_{datetime.datetime.now()}_{file_name}"
         drive_service.files().update(fileId=file_id, body={"name": new_name}).execute()
-        print(f"⏩{datetime.datetime.now()} - оброблено {file_name} ")
-        print(f"⏩{datetime.datetime.now()} - перейменовано  {new_name} ")
+        print(f"✅{datetime.datetime.now()} - оброблено {file_name} ")
+        print(f"✅{datetime.datetime.now()} - перейменовано  {new_name} ")
+        move_file.move_file(file_id)
+        print(f"✅{datetime.datetime.now()} - переміщено до архіву")
 
 def main_cycle():
     print(f"⏩{datetime.datetime.now()} ======================================")
@@ -84,7 +77,7 @@ def main_cycle():
             write_changes(file_id,file_name)
         print(f"⏩{datetime.datetime.now()} - {len(files_list)} file(s) for process ")
     except Exception as e:
-        print(f"⏩{datetime.datetime.now()} - ERROR main_cycle {str(e)}")
+        print(f"❗{datetime.datetime.now()} - ERROR main_cycle {str(e)}")
 
 
 

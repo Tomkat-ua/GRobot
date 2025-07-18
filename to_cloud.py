@@ -1,26 +1,16 @@
-import fbextract, gspread,datetime
-from google.oauth2.service_account import Credentials
-
-
+import fbextract,datetime,config
 
 def to_cloud(file_to_cloud):
     result=[]
     try:
         # 📌 Параметри
         DAYS = 7
-        # SPREADSHEET_ID = '1DsiSD8rZbwr-rP9K86H2n6h7ijj4IXEO9G4g66dzSb8'  # твій файл
-        # SHEET_NAME = 'Список'  # або назва аркуша
-
-        # 🔐 Авторизація
-        # gc = gspread.service_account(filename='creds/credentials.json')
-        # sh = gc.open_by_key(SPREADSHEET_ID)
-        # sheet = sh.worksheet(SHEET_NAME)
-
         # Параметри доступу
-        SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-        # Авторизація
-        creds = Credentials.from_service_account_file("creds/credentials.json", scopes=SCOPES)
-        client = gspread.authorize(creds)
+        # SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+        # # Авторизація
+        # creds = Credentials.from_service_account_file("creds/credentials.json", scopes=SCOPES)
+        # client = gspread.authorize(creds)
+        client = config.get_sheet_service()
         # Відкрити таблицю за назвою
         # sh = gc.open("transport")  # або .open_by_url(...)
         # sh = gc.open_by_key("1iIhAaIoHz2bU18QKw6xis3MxohBDxwmkCHlb852NFco")
@@ -88,8 +78,7 @@ def to_cloud(file_to_cloud):
         print(f"⏩{datetime.datetime.now()} ==== END TO CLOUD ========================================================")
         return result
     except Exception as e:
-        print(f"⏩{datetime.datetime.now()} ==== BEGIN TO CLOUD ======================================================")
-        return str(e)
+        return  str(e)
 
     # except Exception as e:
     #     result.append(f" ❗{datetime.datetime.now()} -- ERROR: {str(e)}  ")
