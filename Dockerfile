@@ -1,22 +1,18 @@
-FROM bitnami/python:3.9-debian-12
-
+FROM python:3.9-slim
 ENV TZ=Europe/Kiev
 
 WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libfbclient2 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir tmp
 COPY requirements.txt /app/
 COPY creds/credentials.json /app/creds/credentials.json
 COPY *.py /app/
-#COPY main.py /app/
-#COPY changes2.py /app/
-#COPY to_cloud.py /app/
-#COPY fbextract.py /app/
 
-RUN apt-get update  
-RUN apt-get install  libfbclient2 -y --no-install-recommends
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 CMD [ "python3", "main.py" ]
-
-
